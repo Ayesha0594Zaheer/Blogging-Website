@@ -1,31 +1,33 @@
-name: Deploy Development
-
+name: wf-build-develop
 on:
   push:
     branches:
       - develop
-
 jobs:
-  build:
+  build-develop-job:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install Parcel
-        run: npm install -g parcel-bundler
-
-      - name: Build website
-        run: parcel build src/index.html
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: checkout repo
+        uses: actions/checkout@v4
+      - name: build website
+        run: |
+          npx parcel build "./src/index.html" --dist-dir "./dev" --public-url "./"
+      - name: upload artifact
+        uses: actions/upload-pages-artifact@v3 
         with:
-          path: dist/
-
-  deploy:
-    needs: build
+          path: "./dev"
+          name: "build-artifact-develop"
+  deploy-develop-job:
+    needs: "build-develop-job"
+    environment: "development-env"
+    permissions:
+      pages: write
+      id-token: write
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to GitHub Pages
+      - name: deploy artifacts on GH Pages
         uses: actions/deploy-pages@v4
+        with:
+          name: "build-artifact-develop"
+          token: ${{github.token}}
+    
