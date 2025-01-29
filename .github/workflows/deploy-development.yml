@@ -1,44 +1,32 @@
-name: wf-build-develop
-on:
+name: wf-dvelop-deploy
+on: 
   push:
     branches:
       - develop
-
 jobs:
-  build-develop-job:
+  develop-build-job:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Install Dependencies
-        run: npm install  # Ensures all dependencies are installed
-
-      - name: Build Website
+      - name: Chekcout Repo
+        uses: actions/checkout@v4 
+      - name: Build Website With Parcel 
         run: |
           npx parcel build "./src/index.html" --dist-dir "./dev" --public-url "./"
-
-      - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4  # Corrected action
+      - name: Upload Build Artifacts
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: build-artifact-develop  # Matches deploy step
-          path: ./dev  # Ensure correct path
-
-  deploy-develop-job:
-    needs: build-develop-job
-    runs-on: ubuntu-latest
-    environment: development-env
+          path: "./dev"
+          name: "develop-artifact"
+  develop-deploy-job:
+    needs: "develop-build-job"
+    environment: "development-env"
     permissions:
       pages: write
       id-token: write
+    runs-on: ubuntu-latest
     steps:
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4  # Correctly download artifact
-        with:
-          name: build-artifact-develop
-          path: ./dev  # Ensure deployment folder matches build output
-
-      - name: Deploy Artifacts to GitHub Pages
-        uses: actions/deploy-pages@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}  # Ensuring correct token usage
+      - name: Deploy Artifacts on GH Pages 
+        uses: actions/deploy-pages@v4 
+        with: 
+          artifact_name: "develop-artifact"
+          token: ${{github.token}}
