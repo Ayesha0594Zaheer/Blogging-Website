@@ -3,31 +3,42 @@ on:
   push:
     branches:
       - develop
+
 jobs:
   build-develop-job:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout repo
+      - name: Checkout Repository
         uses: actions/checkout@v4
-      - name: build website
+
+      - name: Install Dependencies
+        run: npm install  # Ensures all dependencies are installed
+
+      - name: Build Website
         run: |
           npx parcel build "./src/index.html" --dist-dir "./dev" --public-url "./"
-      - name: upload artifact
-        uses: actions/upload-pages-artifact@v3 
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4  # Corrected action
         with:
-          path: "./dev"
-          name: "build-artifact-develop"
+          name: build-artifact-develop  # Matches deploy step
+          path: ./dev  # Ensure correct path
+
   deploy-develop-job:
-    needs: "build-develop-job"
-    environment: "development-env"
+    needs: build-develop-job
+    runs-on: ubuntu-latest
+    environment: development-env
     permissions:
       pages: write
       id-token: write
-    runs-on: ubuntu-latest
     steps:
-      - name: deploy artifacts on GH Pages
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4  # Correctly download artifact
+        with:
+          name: build-artifact-develop
+          path: ./dev  # Ensure deployment folder matches build output
+
+      - name: Deploy Artifacts to GitHub Pages
         uses: actions/deploy-pages@v4
         with:
-          name: "build-artifact-develop"
-          token: ${{github.token}}
-    
+          token: ${{ secrets.GITHUB_TOKEN }}  # Ensuring correct token usage
