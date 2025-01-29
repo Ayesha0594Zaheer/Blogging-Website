@@ -12,15 +12,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Lint HTML and CSS Rsc
+      - name: Install linters
+        run: |
+          npm install -g htmlhint stylelint
+
+      - name: Lint HTML and CSS
         run: |
           npx htmlhint "**/*.html"
           npx stylelint "**/*.css"
+        continue-on-error: false  
 
   build:
     needs: linting
     runs-on: ubuntu-latest
     steps:
-      - name: name: Try Build
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm install  
+
+      - name: Try Build
         run: |
           npx parcel build "./src/index.html" --dist-dir "./dev" --public-url "./"
