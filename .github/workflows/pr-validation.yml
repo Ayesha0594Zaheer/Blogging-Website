@@ -10,26 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Lint HTML and CSS Rsc
         run: |
-          npm install -g htmlhint stylelint stylelint-config-standard
-
-      - name: Lint HTML
-        run: htmlhint "src/**/*.html"
-
-      - name: Lint CSS
-        run: stylelint "styles/**/*.css"
+          npx htmlhint "**/*.html"
+          npx stylelint "**/*.css"
 
   build:
+    needs: linting
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Install Parcel
-        run: npm install -g parcel-bundler
-
-      - name: Build website
-        run: parcel build src/index.html
+      - name: name: Try Build
+        run: |
+          npx parcel build "./src/index.html" --dist-dir "./dev" --public-url "./"
